@@ -9,8 +9,11 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic 
-    fluidPage(
-      h1("vizpm25")
+    navbarPage(
+      "VIZPM25",
+      tabPanel("Upload", mod_panel_upload_ui("panel_upload_ui_1")),
+      tabPanel("Visualize", mod_panel_visualize_ui("panel_visualize_ui_1")),
+      tabPanel("Download", mod_panel_download_ui("panel_download_ui_1"))
     )
   )
 }
