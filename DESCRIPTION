@@ -1,0 +1,13 @@
+Package: vizpm25
+Title: Address PM2.5 Visualizer
+Version: 0.0.0.9000
+Authors@R: person('Matt', 'Broerman', email = 'mjb@357@pitt.edu', role = c('cre', 'aut'))
+Description: A shiny app to retrieve and visualize PM2.5 pollution.
+License: MIT + file LICENSE
+Imports: 
+    config (>= 0.3.1),
+    golem (>= 0.3.1),
+    shiny (>= 1.6.0)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
