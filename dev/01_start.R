@@ -20,11 +20,11 @@
 ## 
 golem::fill_desc(
   pkg_name = "vizpm25", # The Name of the package containing the App 
-  pkg_title = "PKG_TITLE", # The Title of the package containing the App 
-  pkg_description = "PKG_DESC.", # The Description of the package containing the App 
-  author_first_name = "AUTHOR_FIRST", # Your First Name
-  author_last_name = "AUTHOR_LAST", # Your Last Name
-  author_email = "AUTHOR@MAIL.COM", # Your Email
+  pkg_title = "Address PM2.5 Visualizer", # The Title of the package containing the App 
+  pkg_description = "A shiny app to retrieve and visualize PM2.5 pollution.", # The Description of the package containing the App 
+  author_first_name = "Matt", # Your First Name
+  author_last_name = "Broerman", # Your Last Name
+  author_email = "mjb@357@pitt.edu", # Your Email
   repo_url = NULL # The URL of the GitHub Repo (optional) 
 )     
 

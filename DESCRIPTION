@@ -5,8 +5,12 @@ Authors@R: person('Matt', 'Broerman', email = 'mjb@357@pitt.edu', role = c('cre'
 Description: A shiny app to retrieve and visualize PM2.5 pollution.
 License: MIT + file LICENSE
 Imports: 
+    attempt,
     config (>= 0.3.1),
+    DT,
+    glue,
     golem (>= 0.3.1),
+    htmltools,
     shiny (>= 1.6.0)
 Encoding: UTF-8
 LazyData: true
