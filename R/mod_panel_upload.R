@@ -12,6 +12,9 @@ mod_panel_upload_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
+        selectInput(ns("dataset"), "Choose a dataset", c("pressure", "cars")),
+        selectInput(ns("column"), "Choose column", character(0)),
+        verbatimTextOutput(ns("summary")),
         fileInput(
           inputId = "filedata",
           label = "Upload data. Choose csv file",
@@ -35,7 +38,18 @@ mod_panel_upload_ui <- function(id){
 mod_panel_upload_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
- 
+    
+    dataset <- reactive(get(input$dataset, "package:datasets"))
+    
+    observeEvent(input$dataset, {
+      updateSelectInput(inputId = "column", choices = names(dataset()))
+    })
+    
+    output$summary <- renderPrint({
+      summary(dataset()[[input$column]])
+    })
+    
+    return(dataset)
   })
 }
     

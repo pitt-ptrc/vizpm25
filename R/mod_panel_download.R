@@ -13,7 +13,7 @@ mod_panel_download_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         fileInput(
-          inputId = "filedata",
+          ns("filedata"),
           label = "Upload data. Choose csv file",
           accept = c(".csv")
         ),
@@ -34,7 +34,6 @@ mod_panel_download_ui <- function(id){
 mod_panel_download_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
- 
   })
 }
     
