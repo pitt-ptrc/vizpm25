@@ -12,18 +12,12 @@ mod_panel_download_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        fileInput(
-          ns("filedata"),
-          label = "Upload data. Choose csv file",
-          accept = c(".csv")
-        ),
-        verbatimTextOutput(ns("view_data")),
-        actionButton(
-          ns("download"),
-          label = "Download"
-        )
+        downloadButton(ns("downloadData"), "Download")
       ),
-      mainPanel()
+      mainPanel(
+        verbatimTextOutput(ns("summary")),
+        dataTableOutput(ns("datatable"))
+      )
     )
   )
 }
@@ -31,9 +25,22 @@ mod_panel_download_ui <- function(id){
 #' panel_download Server Functions
 #'
 #' @noRd 
-mod_panel_download_server <- function(id){
+mod_panel_download_server <- function(id, dataset){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    output$summary <- renderPrint({
+      summary(dataset())
+    })
+    
+    output$downloadData <- downloadHandler(
+      filename <- function() {
+        paste0("geo_ts_", Sys.Date(), ".csv")
+      },
+      content <- function(file) {
+        write.csv(dataset(), file, row.names = FALSE)
+      }
+    )
   })
 }
     

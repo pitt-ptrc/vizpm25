@@ -83,6 +83,8 @@ mod_panel_visualize_server <- function(id, dataset){
                liquor,
                v_level)
     })
+    
+    return(dataset_ts)
   })
 }
     
