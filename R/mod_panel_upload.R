@@ -19,7 +19,8 @@ mod_panel_upload_ui <- function(id){
                              ".csv")),
         actionButton(ns("v_file"),"Validate File"),
         uiOutput(ns("valid_message")),
-        hr()
+        hr(),
+        verbatimTextOutput(ns("console"))
         # verbatimTextOutput("view_valid_data"),
         # fileInput(
         #   inputId = ns("filedata"),
@@ -48,6 +49,7 @@ mod_panel_upload_ui <- function(id){
 #' @noRd 
 #' @importFrom dplyr mutate n
 #' @importFrom magrittr %>%
+#' @importFrom tidygeocoder geocode
 mod_panel_upload_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
@@ -103,14 +105,31 @@ mod_panel_upload_server <- function(id){
     # x = [-79.95, -80.00], y = [40.35, 40.50]
     dataset_geo <- eventReactive(input$geo_file, {
       if (input$access_code == "geo"){
+        
         dataset() %>% 
-          mutate(x = runif(n(), min = -80.00, max = -79.95)) %>% 
-          mutate(y = runif(n(), min = 40.35, max = 40.50)) %>% 
+          geocode(address, method = 'census', lat = y , long = x) %>%
           return()
+        
+        # withConsoleRedirect(output$console, {
+        #   dataset() %>% 
+        #     geocode(address, method = 'census', lat = y , long = x) %>% 
+        #     return()
+        # })
+        
+        # dataset() %>% 
+        #   geocode(address, method = 'census', lat = y , long = x) %>% 
+        #   return()
+        
+        # set.seed(1)
+        # dataset() %>% 
+        #   mutate(x = runif(n(), min = -80.00, max = -79.95)) %>% 
+        #   mutate(y = runif(n(), min = 40.35, max = 40.50)) %>% 
+        #   return()
       }
     })
     
     output$geo_update <- renderPrint(summary(dataset_geo()))
+    
     
     return(dataset_geo)
   })

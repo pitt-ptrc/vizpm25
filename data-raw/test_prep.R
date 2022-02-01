@@ -1,4 +1,6 @@
 library(tidyverse)
+library(tidygeocoder)
+library(plotly)
 
 test_pm25 %>% 
   ggplot(aes(year, value, group = id)) +
@@ -20,7 +22,7 @@ test_pm25 %>%
 library(tidyverse)
 library(tidygeocoder)
 
-rest <- read_csv("../../Downloads/alco-restuarant-violations.csv")
+# rest <- read_csv("../../Downloads/alco-restuarant-violations.csv")
 
 rest %>% glimpse()
 
@@ -78,8 +80,7 @@ test_test <- test_rest %>%
   group_by(id) %>% 
   arrange(inspect_dt) %>% 
   mutate(cs = cumsum(v_level)) %>% 
-  ungroup() %>% 
-  filter(!is.na(cs))
+  ungroup()
 
 test_test %>% View()
 
@@ -95,11 +96,70 @@ test_rest_address <-
 test_rest_address %>% 
   write_csv("data-raw/test_rest_address.csv")
 
+test_rest_address <- 
+  read_csv("data-raw/test_rest_address.csv")
+
+
+test_rest_address %>% View()
 test_rest_geo <- test_rest_address %>% 
   geocode(address, method = 'osm', lat = latitude , long = longitude)
+
+test_rest_geo
 
 test_rest_geo_cen <- test_rest_address %>% 
   geocode(address, method = 'census', lat = latitude , long = longitude)
 
 test_rest_geo_cen
 
+leftover <- test_rest_geo_cen %>%
+  filter(latitude %>% is.na()) %>%
+  geocode(
+    address,
+    method = 'census',
+    lat = latitude ,
+    long = longitude,
+    mode = 'single',
+    full_results = TRUE,
+    return_type = 'geographies'
+  )
+
+leftover %>% View()
+
+test_rest_geo_goo <- test_rest_address %>% 
+  geocode(address = address, method = "google", lat = latitude , long = longitude)
+
+
+test_rest_geo_goo
+
+library(dplyr, warn.conflicts = FALSE)
+library(tidygeocoder)
+
+# create a dataframe with addresses
+some_addresses <- tibble::tribble(
+  ~name,                  ~addr,
+  "White House",          "1600 Pennsylvania Ave NW, Washington, DC",
+  "Transamerica Pyramid", "600 Montgomery St, San Francisco, CA 94111",     
+  "Willis Tower",         "233 S Wacker Dr, Chicago, IL 60606"                                  
+)
+
+# geocode the addresses
+lat_longs <- some_addresses %>%
+  geocode(addr, method = 'google', lat = latitude , long = longitude)
+#> Passing 3 addresses to the Nominatim single address geocoder
+#> Query completed in: 3 seconds
+
+lat_longs
+
+
+some_addresses <- tibble::tribble(
+  ~name,                  ~addr,
+  "White House",          "1600 Pennsylvania Ave NW, Washington, DC",
+  "Transamerica Pyramid", "600 Montgomery St, San Francisco, CA 94111",     
+  "Willis Tower",         "233 S Wacker Dr, Chicago, IL 60606"                                  
+)
+
+# geocode the addresses
+lat_longs <- some_addresses %>%
+  geocode(addr, method = 'google', lat = latitude , long = longitude)
+
+lat_longs

@@ -9,3 +9,5 @@ $run_dev.*
 ^CODE_OF_CONDUCT\.md$
 ^Dockerfile$
 ^\.dockerignore$
+^app\.R$
+^rsconnect$

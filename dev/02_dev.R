@@ -19,6 +19,11 @@ usethis::use_package( "thinkr" )
 usethis::use_package("magrittr")
 usethis::use_package("dplyr")
 usethis::use_package("ggplot2")
+usethis::use_package("plotly")
+usethis::use_package("leaflet")
+usethis::use_package("terra")
+usethis::use_package("tidygeocoder")
+
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -26,10 +31,13 @@ golem::add_module( name = "layout_panel" ) # Name of the module
 golem::add_module( name = "panel_upload" ) # Name of the module
 golem::add_module( name = "panel_visualize" ) # Name of the module
 golem::add_module( name = "panel_download" ) # Name of the module
+golem::add_module( name = "test" ) # Name of the module
+
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-golem::add_fct( "helpers" ) 
+golem::add_fct( "conn" ) 
+golem::add_fct("helper")
 golem::add_utils( "layout" )
 
 ## External resources
