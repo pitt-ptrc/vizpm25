@@ -65,46 +65,29 @@ mod_panel_visualize_ui <- function(id){
 #' @importFrom stringr str_replace
 #' @importFrom plotly renderPlotly
 
-data("test_restaurant")
-
 mod_panel_visualize_server <- function(id, dataset){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    testdata <- read.csv("data-raw/test_geocoded.csv")
     
     output$summary <- renderPrint({
       summary(dataset())
     })
     
-    # output$map_plot <- renderLeaflet({
-    #   leaflet() %>%
-    #     addProviderTiles("Stamen.Watercolor") %>%
-    #     setView(lng = -79.9959,
-    #             lat = 40.4406,
-    #             zoom = 10)
-    # })
-    # 
-    # observe({
-    #   leafletProxy(session$ns("map_plot"), data = dataset()) %>%
-    #     clearMarkers() %>%
-    #     clearControls() %>% 
-    #     addCircleMarkers(
-    #       lng = ~x,
-    #       lat = ~y,
-    #       label = ~facility_name
-    #       # color = ~pal(status)
-    #     ) %>% 
-    #     # addLegend("bottomright", pal = pal, values = ~status,
-    #     #           title = "Status",
-    #     #           opacity = 1
-    #     # ) %>% 
-    #     identity()
-    # })
-    
-    dataset_ts <- eventReactive(input$calculate, {
-      dataset() %>% 
-        left_join(test_restaurant) %>% 
-        return()
-    })
+    output$map_plot <- renderLeaflet(
+      leaflet(data = dataset()) %>% 
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addCircleMarkers(
+          lng = ~x,
+          lat = ~y,
+          label = ~name_for_address
+          # color = ~pal(status),
+        ) %>%
+        setView(lng = -79.9959,
+                lat = 40.4406,
+                zoom = 10)
+    )
     
     dataset_pm25 <- eventReactive(input$calculate, {
       
@@ -130,63 +113,38 @@ mod_panel_visualize_server <- function(id, dataset){
       
       ex_test <- terra::extract(rt_sub, dataset_prep) %>% 
         tibble::as_tibble() %>%
-        # mutate(ID = as.character(ID)) %>% 
-        # pivot_longer(!ID, names_to = "date", values_to = "pm25") %>% 
-        # mutate(date = as.Date(date)) %>%
         identity()
       
-      
-      
       dplyr::left_join(dataset_prep %>% as_tibble(), ex_test, by = c("rowid" = "ID"))
+      
     })
-    
-    # output$plot_path <- renderPlotly({
-    #   dataset_ts() %>% 
-    #     ggplot(aes(inspect_dt, cs, group = facility_name, color = facility_name)) +
-    #     geom_path() +
-    #     xlab("Inspection Date") +
-    #     ylab("Cumulative Violation Score") +
-    #     # scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-    #     NULL
-    # })
     
     output$plot_path <- renderPlotly({
       dataset_pm25() %>% 
         pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
         mutate(date = as.Date(date)) %>% 
-        ggplot(aes(date, pm25, group = facility_name)) +
+        ggplot(aes(date, pm25, group = name_for_address)) +
         geom_path()
     })
     
-    data <- reactiveValues()
-    
-    data$static_plot <- renderPlot({
-      dataset_ts() %>% 
-        ggplot(aes(inspect_dt, cs, group = facility_name, color = facility_name)) +
-        geom_path() +
-        xlab("Inspection Date") +
-        ylab("Cumulative Violation Score")
-    })
+    static_plot_input <- function(){
+      dataset_pm25() %>% 
+        pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
+        mutate(date = as.Date(date)) %>% 
+        ggplot(aes(date, pm25, group = name_for_address)) +
+        geom_path()
+    }
     
     output$download_plot <- downloadHandler(
       filename = function() {
         paste("static_plot", '.png', sep = '')
       },
       content = function(file) {
-        ggsave(file, plot = data$plot)
+        ggsave(file, plot = static_plot_input(), device = "png")
       }
     )
     
     output$table <- renderDataTable({
-      # dataset_ts() %>% 
-      #   select(facility_name,
-      #          encounter,
-      #          description_new,
-      #          inspect_dt,
-      #          chain,
-      #          liquor,
-      #          v_level)
-      
       dataset_pm25()
     })
     

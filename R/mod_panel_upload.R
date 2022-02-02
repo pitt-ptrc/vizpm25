@@ -12,6 +12,8 @@ mod_panel_upload_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
+        "Your file must have a column header that includes the column names 'address' and 'name_for_address'. No name or address should appear more than once.",
+        hr(),
         fileInput(ns("filedata"), "Choose your file in csv",
                   multiple = FALSE,
                   accept = c("text/csv",
@@ -21,17 +23,6 @@ mod_panel_upload_ui <- function(id){
         uiOutput(ns("valid_message")),
         hr(),
         verbatimTextOutput(ns("console"))
-        # verbatimTextOutput("view_valid_data"),
-        # fileInput(
-        #   inputId = ns("filedata"),
-        #   label = "Upload data. Choose csv file",
-        #   accept = c(".csv")
-        # ),
-        # textInput(ns("access_code"), "Access Code"),
-        # actionButton(
-        #   ns("geolocate"),
-        #   label = "Geolocate"
-        # )
       ),
       mainPanel(
         verbatimTextOutput(ns("view_data")),
@@ -79,6 +70,14 @@ mod_panel_upload_server <- function(id){
             tags$div(
               tags$br(),
               "'address' must be a column name.", 
+              tags$br()
+            )
+          )
+        } else if (!is.element("name_for_address", colnames(dataset()))) {
+          output$valid_message <- renderUI(
+            tags$div(
+              tags$br(),
+              "'name_for_address' must be a column name.", 
               tags$br()
             )
           )

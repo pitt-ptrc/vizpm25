@@ -1,0 +1,13 @@
+name: vizpm25
+title: vizpm25
+username:
+account: paccm
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5566959
+bundleId: 5535933
+url: https://paccm.shinyapps.io/vizpm25/
+when: 1643825933.6389
+lastSyncTime: 1643825933.63891
+asMultiple: FALSE
+asStatic: FALSE

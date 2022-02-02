@@ -5,21 +5,21 @@ Authors@R: person('Matt', 'Broerman', email = 'mjb@357@pitt.edu', role = c('cre'
 Description: A shiny app to retrieve and visualize PM2.5 pollution.
 License: MIT + file LICENSE
 Imports: 
-    attempt,
+    attempt (>= 0.3.1),
     config (>= 0.3.1),
-    dplyr,
-    DT,
-    ggplot2,
-    glue,
+    dplyr (>= 1.0.7),
+    DT (>= 0.20),
+    ggplot2 (>= 3.3.5),
+    glue (>= 1.6.0),
     golem (>= 0.3.1),
-    htmltools,
-    leaflet,
-    magrittr,
-    pkgload,
-    plotly,
+    htmltools (>= 0.5.2),
+    leaflet (>= 2.0.4.1),
+    magrittr (>= 2.0.1),
+    pkgload (>= 1.2.4),
+    plotly (>= 4.10.0),
     shiny (>= 1.6.0),
-    terra,
-    tidygeocoder
+    terra (>= 1.5.12),
+    tidygeocoder (>= 1.0.5)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
