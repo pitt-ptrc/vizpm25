@@ -107,6 +107,9 @@ mod_panel_visualize_server <- function(id, dataset){
     })
     
     dataset_pm25 <- eventReactive(input$calculate, {
+      
+      req(dataset())
+      
       dataset_prep <- 
         dataset() %>% 
         rowid_to_column() %>% 
