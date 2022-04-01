@@ -5,9 +5,9 @@ account: mjbroerman
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5461863
-bundleId: 5742838
+bundleId: 5755211
 url: https://mjbroerman.shinyapps.io/vizpm25/
-when: 1648603246.82598
-lastSyncTime: 1648603246.82603
+when: 1648838798.87231
+lastSyncTime: 1648838798.87233
 asMultiple: FALSE
 asStatic: FALSE

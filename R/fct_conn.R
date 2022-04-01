@@ -60,5 +60,9 @@ shiny::onStop(function() {
 #   print("db disconnecting!")
 # })
 
-zip_code_db <- zipcodeR::zip_code_db
+# load(system.file("data", package = "zipcodeR", "zip_code_db.rda"))
+
+# print(class(iris))
+
+# zip_code_db <- zipcodeR::zip_code_db
 

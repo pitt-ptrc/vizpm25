@@ -177,13 +177,16 @@ mod_panel_upload_server <- function(id){
     output$data_validation <- renderPrint(dataset_valid())
     
     dataset_geo <- eventReactive(input$geo_file, {
+      
+      # load(system.file("data", package = "zipcodeR", "zip_code_db.rda"))
+      
       if (input$access_code == "geo"){
         
-        zip_code_db <- zipcodeR::zip_code_db
+        # zip_code_db <- zipcodeR::zip_code_db
         
-        dataset_geozip <- dataset_valid()$zip5 %>% 
-          geocode_zip() %>% 
-          rename(zip5 = zipcode, zip_lat = lat, zip_lng = lng)
+        # dataset_geozip <- dataset_valid()$zip5 %>% 
+        #   geocode_zip() %>% 
+        #   rename(zip5 = zipcode, zip_lat = lat, zip_lng = lng)
         
         if (
           is.element("lat", colnames(dataset())) & 
@@ -191,7 +194,7 @@ mod_panel_upload_server <- function(id){
         ) {
           
           dataset_valid()  %>% 
-            left_join(dataset_geozip) %>% 
+            # left_join(dataset_geozip) %>% 
             select(-id) %>% 
             dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>% 
             # geocode(address, method = 'census', lat = "lat" , long = "lng") %>%
@@ -206,7 +209,7 @@ mod_panel_upload_server <- function(id){
               {
                 
                 dataset_valid()  %>%
-                  left_join(dataset_geozip) %>%
+                  # left_join(dataset_geozip) %>%
                   select(-id) %>%
                   dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>%
                   geocode(address, method = input$service, lat = "lat" , long = "lng") %>%
@@ -219,7 +222,7 @@ mod_panel_upload_server <- function(id){
               {
                 
                 dataset_cen <- dataset_valid()  %>%
-                  left_join(dataset_geozip) %>%
+                  # left_join(dataset_geozip) %>%
                   select(-id) %>%
                   dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>%
                   geocode(address, method = "census", lat = "lat" , long = "lng")
