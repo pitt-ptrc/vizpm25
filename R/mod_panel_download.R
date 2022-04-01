@@ -12,6 +12,9 @@ mod_panel_download_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
+        radioButtons(ns("download_choice"),
+                     "Choose download",
+                     choices = c("Selected data", "All data")),
         downloadButton(ns("downloadData"), "Download")
       ),
       mainPanel(
@@ -25,12 +28,13 @@ mod_panel_download_ui <- function(id){
 #' panel_download Server Functions
 #'
 #' @noRd 
+#' @importFrom dplyr glimpse
 mod_panel_download_server <- function(id, dataset){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
     output$summary <- renderPrint({
-      summary(dataset())
+      glimpse(dataset())
     })
     
     output$downloadData <- downloadHandler(

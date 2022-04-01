@@ -24,7 +24,7 @@ golem::fill_desc(
   pkg_description = "A shiny app to retrieve and visualize PM2.5 pollution.", # The Description of the package containing the App 
   author_first_name = "Matt", # Your First Name
   author_last_name = "Broerman", # Your Last Name
-  author_email = "mjb@357@pitt.edu", # Your Email
+  author_email = "mjb357@pitt.edu", # Your Email
   repo_url = NULL # The URL of the GitHub Repo (optional) 
 )     
 

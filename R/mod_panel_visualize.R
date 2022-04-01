@@ -14,24 +14,58 @@ mod_panel_visualize_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        # selectInput(ns("column"), "Choose column", character(0)),
-        verbatimTextOutput(ns("summary")),
-        verbatimTextOutput(ns("filename")),
-        sliderInput(
-          ns("slider"),
-          "Time",
-          min = as.Date("2018-01-01"),
-          max = as.Date("2018-03-01"),
-          value = c(
-            as.Date("2018-01-01"),
-          as.Date("2018-02-01")
+        wellPanel(
+          selectInput(
+            ns("pm_select"),
+            "PM2.5 Type",
+            choices = 
+              list(
+                "sulfate (SO4)",
+                "nitrate (NO3)",
+                "ammonium (NH4)",
+                "organic matter (OM)",
+                "black carbon (BC)",
+                "mineral dust (DUST)",
+                "sea-salt (SS)"
+              )
           ),
-          timeFormat = "%b %Y"
+          sliderInput(
+            ns("pm_slider"),
+            "Time Period",
+            min = as.Date("2018-01-01"),
+            max = as.Date("2018-03-01"),
+            value = c(
+              as.Date("2018-01-01"),
+              as.Date("2018-02-01")
+            ),
+            timeFormat = "%b %Y"
+          )
         ),
-        verbatimTextOutput(ns("view_data")),
+        wellPanel(
+          splitLayout(
+            checkboxGroupInput(
+              ns("adi_type"),
+              "ADI Type",
+              choices = 
+                list(
+                  "State",
+                  "National"
+                )
+            ),
+            checkboxGroupInput(
+              ns("adi_year"),
+              "ADI Year",
+              choices = 
+                list(
+                  "2015",
+                  "2019"
+                )
+            )
+          )
+        ),
         actionButton(
-          ns("calculate"),
-          label = "Fetch PM2.5 Data"
+          ns("fetch_feat"),
+          label = "Fetch data"
         )
       ),
       mainPanel(
@@ -45,7 +79,7 @@ mod_panel_visualize_ui <- function(id){
             plotlyOutput(ns("plot_path")),
             downloadButton(ns('download_plot'),'Download Static Plot')
           ),
-          tabPanel("Table", dataTableOutput(ns("table")))
+          tabPanel("Annotations", dataTableOutput(ns("feat_table")))
         )
       )
     )
@@ -58,38 +92,20 @@ mod_panel_visualize_ui <- function(id){
 #' @importFrom magrittr %>%
 #' @import ggplot2
 #' @import leaflet
-#' @importFrom dplyr left_join select
+#' @import dplyr
 #' @importFrom tidyr pivot_longer
 #' @importFrom tibble as_tibble rowid_to_column
 #' @importFrom terra vect extract subset
 #' @importFrom stringr str_replace
 #' @importFrom plotly renderPlotly
+#' @importFrom DBI dbGetQuery
 
 mod_panel_visualize_server <- function(id, dataset){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
-    testdata <- read.csv("data-raw/test_geocoded.csv")
     
-    output$summary <- renderPrint({
-      summary(dataset())
-    })
-    
-    output$map_plot <- renderLeaflet(
-      leaflet(data = dataset()) %>% 
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addCircleMarkers(
-          lng = ~x,
-          lat = ~y,
-          label = ~name_for_address
-          # color = ~pal(status),
-        ) %>%
-        setView(lng = -79.9959,
-                lat = 40.4406,
-                zoom = 10)
-    )
-    
-    dataset_pm25 <- eventReactive(input$calculate, {
+    dataset_feat <- eventReactive(input$fetch_feat, {
       
       req(dataset())
       
@@ -98,10 +114,12 @@ mod_panel_visualize_server <- function(id, dataset){
         rowid_to_column() %>% 
         # filter(!is.na(x)) %>% 
         # sf::st_as_sf(coords = c("x","y"))
+        mutate(x = lng) %>% 
+        mutate(y = lat) %>% 
         terra::vect(geom = c("x", "y"))
       
       correct_dates <-
-        stringr::str_replace(input$slider, pattern = "\\d\\d$", replacement = "01")
+        stringr::str_replace(input$pm_slider, pattern = "\\d\\d$", replacement = "01")
       
       sel_dates <- as.character(seq(
         from = as.Date(correct_dates[1]),
@@ -115,23 +133,58 @@ mod_panel_visualize_server <- function(id, dataset){
         tibble::as_tibble() %>%
         identity()
       
-      dplyr::left_join(dataset_prep %>% as_tibble(), ex_test, by = c("rowid" = "ID"))
+      dataset_poll <- dplyr::left_join(dataset_prep %>% as_tibble(), ex_test, by = c("rowid" = "ID"))
+      
+      ### ADI
+      
+      zips <- dataset() %>% 
+        pull(zip)
+      
+      adis <- tbl(con, "adi_rank")
+      
+      zip_adi <- adis %>% 
+        filter(zip %in% zips) %>% 
+        collect()
+      
+      dataset_poll %>% 
+        left_join(zip_adi)
+      
+        
       
     })
     
+    output$map_plot <- renderLeaflet({
+      
+      binpal <- colorBin("RdYlGn", dataset_feat()$adi_natrank, 5, pretty = FALSE)
+      
+      leaflet(data = dataset_feat()) %>% 
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addCircleMarkers(
+          lng = ~lng,
+          lat = ~lat,
+          label = ~id,
+          # radius = ~sqrt(adi_natrank)
+          color = ~binpal(adi_natrank),
+        ) %>%
+        addLegend("bottomright", pal = binpal, values = ~adi_natrank,
+                  title = "ADI National Rank",
+                  opacity = 1
+        )
+    })
+    
     output$plot_path <- renderPlotly({
-      dataset_pm25() %>% 
+      dataset_feat() %>% 
         pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
         mutate(date = as.Date(date)) %>% 
-        ggplot(aes(date, pm25, group = name_for_address)) +
+        ggplot(aes(date, pm25, group = id)) +
         geom_path()
     })
     
     static_plot_input <- function(){
-      dataset_pm25() %>% 
+      dataset_feat() %>% 
         pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
         mutate(date = as.Date(date)) %>% 
-        ggplot(aes(date, pm25, group = name_for_address)) +
+        ggplot(aes(date, pm25, group = id)) +
         geom_path()
     }
     
@@ -144,11 +197,11 @@ mod_panel_visualize_server <- function(id, dataset){
       }
     )
     
-    output$table <- renderDataTable({
-      dataset_pm25()
+    output$feat_table <- renderDataTable({
+      dataset_feat()
     })
     
-    return(dataset_pm25)
+    return(dataset_feat)
   })
 }
     

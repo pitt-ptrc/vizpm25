@@ -1,0 +1,13 @@
+name: vizpm25
+title: vizpm25
+username:
+account: mjbroerman
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5461863
+bundleId: 5742838
+url: https://mjbroerman.shinyapps.io/vizpm25/
+when: 1648603246.82598
+lastSyncTime: 1648603246.82603
+asMultiple: FALSE
+asStatic: FALSE

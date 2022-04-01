@@ -11,3 +11,4 @@ $run_dev.*
 ^\.dockerignore$
 ^app\.R$
 ^rsconnect$
+^scratch$

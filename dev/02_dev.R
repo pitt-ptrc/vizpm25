@@ -23,6 +23,18 @@ usethis::use_package("plotly")
 usethis::use_package("leaflet")
 usethis::use_package("terra")
 usethis::use_package("tidygeocoder")
+usethis::use_package("reticulate")
+usethis::use_package("devtools")
+usethis::use_dev_package("addressr")
+usethis::use_package("purrr")
+usethis::use_package("data.table")
+usethis::use_package("tidyr")
+usethis::use_package("pool")
+usethis::use_package("dbplyr")
+usethis::use_package("DBI")
+usethis::use_package("pool")
+usethis::use_package("RSQLite")
+usethis::use_package("zipcodeR")
 
 
 ## Add modules ----
@@ -38,7 +50,7 @@ golem::add_module( name = "test" ) # Name of the module
 ## Creates fct_* and utils_*
 golem::add_fct( "conn" ) 
 golem::add_fct("helper")
-golem::add_utils( "layout" )
+golem::add_utils( "copy" )
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
@@ -50,6 +62,7 @@ golem::add_css_file( "custom" )
 ## If you have data in your package
 usethis::use_data_raw( name = "test_pm25", open = FALSE ) 
 usethis::use_data_raw( name = "test_restaurant", open = FALSE ) 
+usethis::use_data_raw( name = "test_rest_valid", open = TRUE ) 
 
 ## Tests ----
 ## Add one line by test you want to create
