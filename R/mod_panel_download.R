@@ -29,12 +29,15 @@ mod_panel_download_ui <- function(id){
 #'
 #' @noRd 
 #' @importFrom dplyr glimpse
+#' @importFrom tidyr pivot_wider
 mod_panel_download_server <- function(id, dataset){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
     output$summary <- renderPrint({
-      glimpse(dataset())
+      dataset() %>% 
+        pivot_wider(names_from = "material", values_from = "value") %>% 
+        glimpse()
     })
     
     output$downloadData <- downloadHandler(

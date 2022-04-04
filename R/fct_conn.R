@@ -6,16 +6,48 @@
 #'
 #' @noRd
 #' @importFrom terra rast
+#' @import AzureStor
+#' @import dplyr
+#' @import tidyr
+#' @import stringr
 
-brick_cog_url <- "/vsicurl/https://testpaccmstorage.blob.core.windows.net/test-container/pm25_brick_cog.tif"
+gdal_virt_fs_head <- "/vsicurl"
+blob_name <- "https://testpaccmstorage.blob.core.windows.net"
+cont_name <- "test-container"
+access_key <- Sys.getenv("ACCESS_KEY")
 
-rt_bcog <- terra::rast(brick_cog_url)
+bl_endp_key <- AzureStor::storage_endpoint(blob_name, key = access_key)
+cont <- AzureStor::storage_container(bl_endp_key, cont_name)
 
-names(rt_bcog) <- seq(as.Date("2018/01/01"), by = "month", length.out = 3)
+assn_dates_names <- function(spatrast){
+  names(spatrast) <- 
+    seq.Date(as.Date("2000-01-01"), as.Date("2017-12-01"), by = "month")
+  
+  spatrast
+}
 
-sel_dates <- as.character(seq(as.Date("2018/01/01"), by = "month", length.out = 2))
+mat_rast_list <- cont %>% 
+  AzureStor::list_storage_files() %>% 
+  filter(stringr::str_detect(name, "cog_")) %>% 
+  filter(!stringr::str_detect(name, "PM25")) %>% 
+  tidyr::separate(name, into = c("cog", "material", "portion"), remove = FALSE, extra = "drop") %>% 
+  mutate(vsi_url = file.path(gdal_virt_fs_head, blob_name, cont_name, name)) %>% 
+  tibble() %>% 
+  split(.$material) %>% 
+  map(., ~ pull(.x, vsi_url) %>% 
+        terra::rast() %>% 
+        c() %>% 
+        assn_dates_names())
 
-terra::subset(rt_bcog, sel_dates)
+# brick_cog_url <- "/vsicurl/https://testpaccmstorage.blob.core.windows.net/test-container/pm25_brick_cog.tif"
+# 
+# rt_bcog <- terra::rast(brick_cog_url)
+
+# names(rt_bcog) <- seq(as.Date("2018/01/01"), by = "month", length.out = 3)
+
+# sel_dates <- as.character(seq(as.Date("2018/01/01"), by = "month", length.out = 2))
+# 
+# terra::subset(rt_bcog, sel_dates)
 
 # data("test_restaurant")
 # 

@@ -15,28 +15,28 @@ mod_panel_visualize_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         wellPanel(
-          selectInput(
-            ns("pm_select"),
-            "PM2.5 Type",
+          checkboxGroupInput(
+            ns("mat_select"),
+            "Material Type",
             choices = 
-              list(
-                "sulfate (SO4)",
-                "nitrate (NO3)",
-                "ammonium (NH4)",
-                "organic matter (OM)",
-                "black carbon (BC)",
-                "mineral dust (DUST)",
-                "sea-salt (SS)"
+              c(
+                # "sulfate (SO4)" = "SO4",
+                "nitrate (NIT)" = "NIT",
+                "ammonium (NH4)" = "NH4",
+                # "organic matter (OM)" = "OM",
+                "black carbon (BC)" = "BC"
+                # "mineral dust (DUST)" = "DUS",
+                # "sea-salt (SS)" = "SS"
               )
           ),
           sliderInput(
-            ns("pm_slider"),
+            ns("mat_slider"),
             "Time Period",
-            min = as.Date("2018-01-01"),
-            max = as.Date("2018-03-01"),
+            min = as.Date("2000-01-01"),
+            max = as.Date("2017-12-01"),
             value = c(
-              as.Date("2018-01-01"),
-              as.Date("2018-02-01")
+              as.Date("2001-01-01"),
+              as.Date("2002-01-01")
             ),
             timeFormat = "%b %Y"
           )
@@ -93,6 +93,7 @@ mod_panel_visualize_ui <- function(id){
 #' @import ggplot2
 #' @import leaflet
 #' @import dplyr
+#' @import purrr
 #' @importFrom tidyr pivot_longer
 #' @importFrom tibble as_tibble rowid_to_column
 #' @importFrom terra vect extract subset
@@ -119,7 +120,7 @@ mod_panel_visualize_server <- function(id, dataset){
         terra::vect(geom = c("x", "y"))
       
       correct_dates <-
-        stringr::str_replace(input$pm_slider, pattern = "\\d\\d$", replacement = "01")
+        stringr::str_replace(input$mat_slider, pattern = "\\d\\d$", replacement = "01")
       
       sel_dates <- as.character(seq(
         from = as.Date(correct_dates[1]),
@@ -127,13 +128,23 @@ mod_panel_visualize_server <- function(id, dataset){
         by = "month"
       ))
       
-      rt_sub <- terra::subset(rt_bcog, sel_dates)
+      mat_rast_list_sel <- mat_rast_list[input$mat_select] %>% 
+        map(~ terra::subset(.x, sel_dates))
       
-      ex_test <- terra::extract(rt_sub, dataset_prep) %>% 
-        tibble::as_tibble() %>%
-        identity()
+      geo_extr <- mat_rast_list_sel %>% 
+        map(~ terra::extract(.x, dataset_prep)) %>% 
+        map(~ tibble(.x) %>% pivot_longer(-ID) %>% 
+              mutate(date = name %>% as.Date())) %>% 
+        imap(~ mutate(.x, material = .y)) %>% 
+        bind_rows()
       
-      dataset_poll <- dplyr::left_join(dataset_prep %>% as_tibble(), ex_test, by = c("rowid" = "ID"))
+      # rt_sub <- terra::subset(rt_bcog, sel_dates)
+      # 
+      # ex_test <- terra::extract(rt_sub, dataset_prep) %>% 
+      #   tibble::as_tibble() %>%
+      #   identity()
+      
+      dataset_poll <- dplyr::left_join(dataset_prep %>% as_tibble(), geo_extr, by = c("rowid" = "ID"))
       
       ### ADI
       
@@ -174,18 +185,16 @@ mod_panel_visualize_server <- function(id, dataset){
     
     output$plot_path <- renderPlotly({
       dataset_feat() %>% 
-        pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
-        mutate(date = as.Date(date)) %>% 
-        ggplot(aes(date, pm25, group = id)) +
-        geom_path()
+        ggplot(aes(date, value, group = id)) +
+        geom_path() +
+        facet_wrap(vars(material))
     })
     
     static_plot_input <- function(){
       dataset_feat() %>% 
-        pivot_longer(cols = starts_with("2018"), names_to = "date", values_to = "pm25") %>%
-        mutate(date = as.Date(date)) %>% 
-        ggplot(aes(date, pm25, group = id)) +
-        geom_path()
+        ggplot(aes(date, value, group = id)) +
+        geom_path() +
+        facet_wrap(vars(material))
     }
     
     output$download_plot <- downloadHandler(

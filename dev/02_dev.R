@@ -35,6 +35,8 @@ usethis::use_package("DBI")
 usethis::use_package("pool")
 usethis::use_package("RSQLite")
 usethis::use_package("zipcodeR")
+usethis::use_package("AzureStor")
+usethis::use_package("stringr")
 
 
 ## Add modules ----
