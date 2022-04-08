@@ -26,10 +26,10 @@ assn_dates_names <- function(spatrast){
   spatrast
 }
 
-mat_rast_list <- cont %>% 
+mat_rast_list_old <- cont %>% 
   AzureStor::list_storage_files() %>% 
   filter(stringr::str_detect(name, "cog_")) %>% 
-  filter(!stringr::str_detect(name, "PM25")) %>% 
+  filter(!stringr::str_detect(name, "PM25|SO4|SOIL")) %>% 
   tidyr::separate(name, into = c("cog", "material", "portion"), remove = FALSE, extra = "drop") %>% 
   mutate(vsi_url = file.path(gdal_virt_fs_head, blob_name, cont_name, name)) %>% 
   tibble() %>% 
@@ -38,6 +38,22 @@ mat_rast_list <- cont %>%
         terra::rast() %>% 
         c() %>% 
         assn_dates_names())
+
+mat_rast_list_new <- cont %>% 
+  AzureStor::list_storage_files() %>% 
+  filter(stringr::str_detect(name, "cog_")) %>% 
+  filter(stringr::str_detect(name, "PM25|SO4|SOIL")) %>% 
+  tidyr::separate(name, into = c("cog", "material", "year"), remove = FALSE, extra = "drop") %>% 
+  mutate(vsi_url = file.path(gdal_virt_fs_head, blob_name, cont_name, name)) %>% 
+  tibble() %>% 
+  split(.$material) %>% 
+  map(., ~ pull(.x, vsi_url) %>% 
+        terra::rast() %>% 
+        c()
+        # assn_dates_names()
+      )
+
+mat_rast_list <- c(mat_rast_list_old, mat_rast_list_new)
 
 # brick_cog_url <- "/vsicurl/https://testpaccmstorage.blob.core.windows.net/test-container/pm25_brick_cog.tif"
 # 

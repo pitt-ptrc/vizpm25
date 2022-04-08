@@ -20,14 +20,17 @@ mod_panel_visualize_ui <- function(id){
             "Material Type",
             choices = 
               c(
-                # "sulfate (SO4)" = "SO4",
-                "nitrate (NIT)" = "NIT",
-                "ammonium (NH4)" = "NH4",
+                "Particulate Matter (PM25)" = "PM25",
+                "Black Carbon (BC)" = "BC",
+                "Ammonium (NH4)" = "NH4",
+                "Nitrate (NIT)" = "NIT",
+                "Sulfate (SO4)" = "SO4",
+                "Soil (SOIL)" = "SOIL"
                 # "organic matter (OM)" = "OM",
-                "black carbon (BC)" = "BC"
                 # "mineral dust (DUST)" = "DUS",
                 # "sea-salt (SS)" = "SS"
-              )
+              ),
+            selected = "PM25"
           ),
           sliderInput(
             ns("mat_slider"),
