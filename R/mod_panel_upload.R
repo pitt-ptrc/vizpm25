@@ -13,13 +13,25 @@ mod_panel_upload_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         copy$upload_intro,
+        tableOutput(ns("table_io")),
+        hr(),
+        radioButtons(
+          ns("fetch_type"), 
+          "Data to fetch",
+          inline = TRUE,
+          choices = c(
+            'PM2.5' = "pm25",
+            "ADI" = "adi",
+            "Both " = "both"
+          )
+        ),
         hr(),
         fileInput(ns("filedata"), "Choose your file in csv",
                   multiple = FALSE,
                   accept = c("text/csv",
                              "text/comma-separated-values,text/plain",
                              ".csv")),
-        actionButton(ns("check_file"),"Check File"),
+        # actionButton(ns("check_file"),"Check File"),
         uiOutput(ns("check_message")),
         hr(),
         uiOutput(ns("valid_message"))
@@ -45,7 +57,6 @@ mod_panel_upload_ui <- function(id){
 #' @importFrom dplyr mutate n rename matches pull bind_cols
 #' @importFrom magrittr %>%
 #' @importFrom tidygeocoder geocode
-#' @importFrom reticulate import virtualenv_create use_virtualenv 
 #' @importFrom purrr map
 #' @importFrom tidyr unite
 #' @importFrom data.table rbindlist
@@ -56,82 +67,29 @@ mod_panel_upload_ui <- function(id){
 mod_panel_upload_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-
-    # python address
-    virtualenv_create("testenv3", packages = c("usaddress"))
-    use_virtualenv("testenv3", required = TRUE)
-    usaddress <- import("usaddress")
     
-    # end python
+    output$table_io <- renderTable(
+      copy$table_io
+    )
     
     dataset <- reactive({
       req(input$filedata)
       read.csv(input$filedata$datapath)
     })
     
+    
+    
     output$view_data <- renderPrint(head(dataset()))
     
-    observeEvent(input$check_file,{
-      if(is.null(input$filedata$datapath)){
-        output$check_message <- renderUI(
-          tags$div(
-            tags$br(),
-            "Please upload a csv file.", 
-            tags$br()
-          )
-        ) 
-      } else {
-        # dataset <- input$filedata$datapath %>% 
-        #   read.csv()
-        
-        if (!is.element("id", colnames(dataset()))) {
-          output$check_message <- renderUI(
-            tags$div(
-              tags$br(),
-              "'id' must be a column name.", 
-              tags$br()
-            )
-          )
-        } else if (!is.element("address", colnames(dataset()))) {
-          output$check_message <- renderUI(
-            tags$div(
-              tags$br(),
-              "'address' must be a column name.", 
-              tags$br()
-            )
-          )
-          
-        } else if (
-          as.logical(
-            sum(
-              !is.element(colnames(dataset()), c("id", "address", "lat", "lng"))
-            )
-          )
-        ) {
-          output$check_message <- renderUI(
-            tags$div(
-              tags$br(),
-              "Only 'id', 'address', 'lat', 'lng' are permitted columns.", 
-              tags$br()
-            )
-          )
-        } else if (length(unique(dataset()$address)) != length(dataset()$address)) {
-          output$check_message <- renderUI(
-            tags$div(
-              tags$br(),
-              "Addresses must be unique.", 
-              tags$br()
-            )
-          )
-        } else {
-          
-          output$check_message <- renderUI(
-            tags$div(
-              tags$br(),
-              actionButton(session$ns("validate_file"),"Validate File")
-            )
-          )
-        }
+    observeEvent(dataset(), {
+      
+      output$check_message <- renderText(validate_format(dataset()))
+      
+      if (is.null(validate_format(dataset()))) {
+        output$check_message <- renderUI(tags$div(tags$br(),
+                                                  actionButton(
+                                                    session$ns("validate_file"), "Validate File"
+                                                  )))
       }
     })
     
@@ -156,37 +114,15 @@ mod_panel_upload_server <- function(id){
     })
     
     dataset_valid <- eventReactive(input$validate_file, {
-      dataset() %>%
-        pull(address) %>% 
-        map(usaddress$tag) %>% 
-        map(1) %>% 
-        rbindlist(fill = TRUE) %>% 
-        unite("Address1", matches("Address|Street"), sep = " ", na.rm = TRUE) %>% 
-        rename(City = PlaceName, State = StateName, Zip5 = ZipCode) %>% 
-        mutate(Zip4 = NA, Address2 = NA) %>% 
-        validateAddress(userid = "558UNIVE2177", address = .) %>% 
-        tibble() %>% 
-        unite("address_main", Address2, City, State, sep = ", ") %>% 
-        mutate(zip5 = Zip5) %>% 
-        unite("zip9", Zip5, Zip4, sep = "", remove = FALSE) %>% 
-        mutate(zip = zip9 %>% as.integer()) %>% 
-        unite("address_zip", Zip5, Zip4, sep = "-") %>% 
-        unite("address", address_main, address_zip, sep = " ")
+      dataset()$address %>%
+        validate_address()
     })
     
     output$data_validation <- renderPrint(dataset_valid())
     
     dataset_geo <- eventReactive(input$geo_file, {
       
-      # load(system.file("data", package = "zipcodeR", "zip_code_db.rda"))
-      
       if (input$access_code == "geo"){
-        
-        # zip_code_db <- zipcodeR::zip_code_db
-        
-        # dataset_geozip <- dataset_valid()$zip5 %>% 
-        #   geocode_zip() %>% 
-        #   rename(zip5 = zipcode, zip_lat = lat, zip_lng = lng)
         
         if (
           is.element("lat", colnames(dataset())) & 
@@ -194,10 +130,8 @@ mod_panel_upload_server <- function(id){
         ) {
           
           dataset_valid()  %>% 
-            # left_join(dataset_geozip) %>% 
             select(-id) %>% 
             dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>% 
-            # geocode(address, method = 'census', lat = "lat" , long = "lng") %>%
             return()
           
         } else {
@@ -209,7 +143,6 @@ mod_panel_upload_server <- function(id){
               {
                 
                 dataset_valid()  %>%
-                  # left_join(dataset_geozip) %>%
                   select(-id) %>%
                   dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>%
                   geocode(address, method = input$service, lat = "lat" , long = "lng") %>%
@@ -222,7 +155,6 @@ mod_panel_upload_server <- function(id){
               {
                 
                 dataset_cen <- dataset_valid()  %>%
-                  # left_join(dataset_geozip) %>%
                   select(-id) %>%
                   dplyr::bind_cols(dataset() %>% rename(address_raw = address)) %>%
                   geocode(address, method = "census", lat = "lat" , long = "lng")

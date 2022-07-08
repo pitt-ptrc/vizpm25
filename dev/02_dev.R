@@ -53,6 +53,7 @@ golem::add_module( name = "test" ) # Name of the module
 golem::add_fct( "conn" ) 
 golem::add_fct("helper")
 golem::add_utils( "copy" )
+golem::add_fct("python")
 
 ## External resources
 ## Creates .js and .css files at inst/app/www

@@ -8,7 +8,7 @@
 #' @importFrom terra rast
 #' @import AzureStor
 #' @import dplyr
-#' @import tidyr
+#' @importFrom tidyr separate
 #' @import stringr
 
 gdal_virt_fs_head <- "/vsicurl"

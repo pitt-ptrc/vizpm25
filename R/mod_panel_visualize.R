@@ -16,6 +16,13 @@ mod_panel_visualize_ui <- function(id){
       sidebarPanel(
         wellPanel(
           checkboxGroupInput(
+            ns("select_type"),
+            "Dataset Type",
+            choices = c(
+              
+            )
+          ),
+          checkboxGroupInput(
             ns("mat_select"),
             "Material Type",
             choices = 
