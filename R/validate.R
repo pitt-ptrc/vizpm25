@@ -31,7 +31,7 @@ validate_format <- function(df, req_cols = c("address", "id"), opt_cols = c("lat
     need(sum(!data_cols %in% per_cols) == 0, "Some columns not permitted"),
     need(nrow(df) == length(unique(df$address)), "Addresses are not unique"),
     need(nrow(df) == length(unique(df$id)), "IDs are not unique"),
-    need(sum(grepl("P.O.|PO Box", df$address, ignore.case = TRUE)) == 0, "P.O. boxes are not valid")
+    need(sum(grepl("P\\.O\\.|PO Box", df$address, ignore.case = TRUE)) == 0, "P.O. boxes are not valid")
   )
 }
 

@@ -80,37 +80,21 @@ mat_rast_list <- c(mat_rast_list_old, mat_rast_list_new)
 # rt_bcog["^2018-([0]|[0-2])-01"]
 
 
+# arrow -----------------------------------------------------------------
 
-# sqlite ------------------------------------------------------------------
+#' Connection to Arrow Disk Dataset
+#'
+#' @param parquet_path 
+#'
+#' @return arrow connection
+#' @importFrom dplyr rename
+#' @importFrom arrow open_dataset
+#' @importFrom magrittr %>%
+arrow_con <- function(parquet_path) {
+  arrow::open_dataset(
+    sources = parquet_path, 
+    format = "parquet" 
+  )
+}
 
-# throws build error, but maybe preferred with a fix?
-# db_file = system.file("extdata", "adi-db-pa.sqlite", package = "vizpm25")
-
-db_path <- "inst/extdata/adi-db-pa.sqlite"
-
-con <- pool::dbPool(
-  drv = RSQLite::SQLite(),
-  dbname = db_path,
-  host = NULL,
-  username = NULL,
-  password = NULL
-)
-
-shiny::onStop(function() {
-  pool::poolClose(con)
-  print("pool closing!")
-})
-
-# con <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_path)
-# 
-# shiny::onStop(function() {
-#   DBI::dbDisconnect(con)
-#   print("db disconnecting!")
-# })
-
-# load(system.file("data", package = "zipcodeR", "zip_code_db.rda"))
-
-# print(class(iris))
-
-# zip_code_db <- zipcodeR::zip_code_db
-
+adis <- arrow_con(parquet_path = "inst/extdata/pa_adi2.parquet")

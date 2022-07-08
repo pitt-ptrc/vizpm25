@@ -161,11 +161,15 @@ mod_panel_visualize_server <- function(id, dataset){
       zips <- dataset() %>% 
         pull(zip)
       
-      adis <- tbl(con, "adi_rank")
+      # adis <- tbl(con, "adi_rank")
+      
+      
       
       zip_adi <- adis %>% 
         filter(zip %in% zips) %>% 
-        collect()
+        collect() %>% 
+        mutate(adi_staterank = as.integer(adi_staterank)) %>% 
+        mutate(adi_natrank = as.integer(adi_natrank))
       
       dataset_poll %>% 
         left_join(zip_adi)
