@@ -7,11 +7,11 @@
 validate_format(df, req_cols = c("address", "id"), opt_cols = c("lat", "lng"))
 }
 \arguments{
-\item{df}{}
+\item{df}{a dataframe consisting of permitted columns, either required and optional.}
 
-\item{req_cols}{}
+\item{req_cols}{required columns}
 
-\item{opt_cols}{}
+\item{opt_cols}{optional columns}
 }
 \value{
 df
@@ -22,9 +22,8 @@ Validate file format
 \examples{
 tdf <- data.frame(
   id = "123",
-  address = "1600 Pennsylvania Avenue NW, Washington, DC 20500",
-  something = "something"
+  address = "1600 Pennsylvania Avenue NW, Washington, DC 20500"
 )
 
-validate_format(tf)
+validate_format(tdf)
 }

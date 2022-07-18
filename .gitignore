@@ -6,3 +6,4 @@
 .Renviron
 /scratch/
 inst/doc
+inst/extdata

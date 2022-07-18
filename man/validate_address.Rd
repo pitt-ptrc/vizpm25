@@ -7,7 +7,7 @@
 validate_address(address)
 }
 \arguments{
-\item{address}{}
+\item{address}{a standard US address}
 }
 \value{
 tibble with validation

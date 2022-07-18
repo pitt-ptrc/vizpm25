@@ -1,9 +1,9 @@
 
 #' Validate file format
 #'
-#' @param df 
-#' @param req_cols 
-#' @param opt_cols 
+#' @param df a dataframe consisting of permitted columns, either required and optional. 
+#' @param req_cols required columns
+#' @param opt_cols optional columns
 #'
 #' @return df
 #' @export
@@ -11,11 +11,10 @@
 #' @examples
 #' tdf <- data.frame(
 #'   id = "123",
-#'   address = "1600 Pennsylvania Avenue NW, Washington, DC 20500",
-#'   something = "something"
+#'   address = "1600 Pennsylvania Avenue NW, Washington, DC 20500"
 #' )
 #' 
-#' validate_format(tf)
+#' validate_format(tdf)
 #' @importFrom shiny validate need
 
 validate_format <- function(df, req_cols = c("address", "id"), opt_cols = c("lat", "lng")) {
@@ -31,13 +30,13 @@ validate_format <- function(df, req_cols = c("address", "id"), opt_cols = c("lat
     need(sum(!data_cols %in% per_cols) == 0, "Some columns not permitted"),
     need(nrow(df) == length(unique(df$address)), "Addresses are not unique"),
     need(nrow(df) == length(unique(df$id)), "IDs are not unique"),
-    need(sum(grepl("P.O.|PO Box", df$address, ignore.case = TRUE)) == 0, "P.O. boxes are not valid")
+    need(sum(grepl("P\\.O\\.|PO Box", df$address, ignore.case = TRUE)) == 0, "P.O. boxes are not valid")
   )
 }
 
 #' Validate address with USPS
 #'
-#' @param address 
+#' @param address a standard US address
 #'
 #' @return tibble with validation
 #' @export

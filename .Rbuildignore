@@ -12,3 +12,4 @@ $run_dev.*
 ^app\.R$
 ^rsconnect$
 ^scratch$
+inst/extdata/pa_adi2.parquet
