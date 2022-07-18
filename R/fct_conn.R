@@ -80,7 +80,9 @@ mat_rast_list <- c(mat_rast_list_old, mat_rast_list_new)
 # rt_bcog["^2018-([0]|[0-2])-01"]
 
 
+# arrow -----------------------------------------------------------------
 
+<<<<<<< HEAD
 # sqlite ------------------------------------------------------------------
 
 # throws build error, but maybe preferred with a fix?
@@ -113,3 +115,21 @@ shiny::onStop(function() {
 # print(class(iris))
 
 # zip_code_db <- zipcodeR::zip_code_db
+=======
+#' Connection to Arrow Disk Dataset
+#'
+#' @param parquet_path 
+#'
+#' @return arrow connection
+#' @importFrom dplyr rename
+#' @importFrom arrow open_dataset
+#' @importFrom magrittr %>%
+arrow_con <- function(parquet_path) {
+  arrow::open_dataset(
+    sources = parquet_path, 
+    format = "parquet" 
+  )
+}
+
+adis <- arrow_con(parquet_path = "inst/extdata/pa_adi2.parquet")
+>>>>>>> 0e5f7a46caedc7c91da5d33a965b4798d97bf1ee
